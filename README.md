@@ -1,45 +1,59 @@
-# Instalacja Modułu Paczkomaty InPost dla osCommerce 2.3
 
-## Upload plików
+# Installation Instructions Module Paczkomaty InPost for osCommerce 2.3
 
-Nowe pliki, które należy umieścić na serwerze w odpowiednich katalogach, zainstalowanego systemu osCommerce.
+
+## Make a Backup
+You should make a backup of your entire site. This includes both your code and the database.
+
+
+## Installation of the shipping module
+
+### Upload Files
+
+#### New files
+The following files need to be uploaded to your site.
 
     /includes/functions/inpost_functions.php
     /includes/languages/polish/modules/shipping/paczkomaty.php
     /includes/modules/shipping/paczkomaty.php
 
+### Edit existing files
+Make the changes outlined below for each file. The numbers of lines are given in approximate.
 
-## Edycja istniejących plików
+#### You need to manually edit these files
 
-Wprowadź zmiany opisane poniżej dla każdego z pliku. Numery lini są szacunkowe dla nieedytowanej wcześniej kopi pliku.
+    /checkout_shipping.php
+    /checkout_confirmation.php
+    /checkout_process.php
+    /includes/database_tables.php
 
-### Otwórz plik '/checkout_shipping.php'
+#### Open /checkout_shipping.php
 
-Znajdź kod (linia 122):
+`FIND on line 122:`
 ```php
 $shipping = array('id' => $shipping,
-	'title' => (($free_shipping == true) ?  $quote[0]['methods'][0]['title'] : $quote[0]['module'] . ' (' . $quote[0]['methods'][0]['title'] . ')'),
-	'cost' => $quote[0]['methods'][0]['cost']);
+    'title' => (($free_shipping == true) ?  $quote[0]['methods'][0]['title'] : $quote[0]['module'] . ' (' . $quote[0]['methods'][0]['title'] . ')'),
+    'cost' => $quote[0]['methods'][0]['cost']);
 ```
-Dodaj po:
+
+`ADD this code after:`
 ```php
 // start paczkomaty
-if (preg_match('/paczkomaty_/', $shipping['id'])) {
-	$pa = new Paczkomaty();
-	$shipping = $pa->oscomm_prepare_shipping($quote, $shipping, $free_shipping);
-}
+    if (preg_match('/paczkomaty_/', $shipping['id'])) {
+        $pa = new Paczkomaty();
+        $shipping = $pa->oscomm_prepare_shipping($quote, $shipping, $free_shipping);
+    }
 // end paczkomaty
 ```
 
-Znadź kod (linia 274):
+`FIND on line 274:`
 ```php
-} else {
+    } else {
           for ($j=0, $n2=sizeof($quotes[$i]['methods']); $j<$n2; $j++) {
-// set the radio button to be checked if it is the method chosen
+    // set the radio button to be checked if it is the method chosen
             $checked = (($quotes[$i]['id'] . '_' . $quotes[$i]['methods'][$j]['id'] == $shipping['id']) ? true : false);
 ```
-
-Dodaj przed:
+`ADD this code before:`
 ```php
 // start paczkomaty
 	} elseif ($quotes[$i]['module'] == MODULE_SHIPPING_PACZKOMATY_TEXT_TITLE) {
@@ -48,31 +62,33 @@ Dodaj przed:
 		if ( ($checked) || ($n == 1 && $n2 == 1) ) {
 			echo '<tr id="defaultSelected" class="moduleRowSelected" onmouseover="rowOverEffect(this)" onmouseout="rowOutEffect(this)" onclick="selectRowEffect(this, '.$radio_buttons.')">';
    		} else {
-   			echo '<tr class="moduleRow" onmouseover="rowOverEffect(this)" onmouseout="rowOutEffect(this)" onclick="selectRowEffect(this, '.$radio_buttons.')">';
+   			echo '<tr id="paczkomatyRow" class="moduleRow" onmouseover="rowOverEffect(this)" onmouseout="rowOutEffect(this)" onclick="selectRowEffect(this, '.$radio_buttons.')">';
    		}
-   		echo '<td width="75%" style="padding-left: 15px;">'.$pa->oscomm_paczkomaty_dropbox($quotes[$i], $shipping).'</td>';
+   		echo '<td width="75%" style="padding-left: 15px;">';
+   		echo $pa->oscomm_paczkomaty_dropbox($quotes[$i], $shipping).'</td>';
    		echo '<td>'.$currencies->format(tep_add_tax($quotes[$i]['methods'][0]['cost'], (isset($quotes[$i]['tax']) ? $quotes[$i]['tax'] : 0))).'</td>';
 		echo '<td align="right">'.tep_draw_radio_field('shipping', $quotes[$i]['id'] . '_' . $quotes[$i]['methods'][0]['id'], $checked, 'id="shipping_paczkomaty"').
 				'<script type="text/javascript">
 					function changeCheckedValue(obj) {
 						document.getElementById("shipping_paczkomaty").value = obj.options[obj.selectedIndex].value;
+						selectRowEffect(document.getElementById("paczkomatyRow"), '.$radio_buttons.');
 					}
 					changeCheckedValue(document.getElementById("dropbox_paczkomaty"));
 				</script>
 	        	</td>';
 		echo '</tr>';
-// end paczkomaty */
+// end paczkomaty
 ```
 
-### Otwórz plik '/checkout_confirmation.php'
+#### Open /checkout_confirmation.php
 
-Znajdź kod (linia 65):
+`FIND on line 65:`
 ```php
     require(DIR_WS_CLASSES . 'shipping.php');
   	$shipping_modules = new shipping($shipping);
 ```
 
-Dodaj po:
+`ADD this code after:`
 ```php
 // start paczkomaty
 	if (preg_match('/paczkomaty_/', $shipping['id'])) {
@@ -82,44 +98,48 @@ Dodaj po:
 // end paczkomaty
 ```
 
-### Otwórz plik '/checkout_process.php'
+#### Open /checkout_process.php
 
-Znajdź kod (linia 286):
+`FIND on line 286:`
 ```php
         $payment_modules->after_process();
 
     	$cart->reset(true);
 ```
 
-Dodaj po:
+`ADD this code after:`
 ```php
-// start paczkomaty
+ // start paczkomaty
 	if (preg_match('/paczkomaty_/', $shipping['id'])) {
 		$pa = new Paczkomaty();
-		$pa->create_packs($shipping, $payment, $order->info['total']);
+		$pa->create_packs($shipping, $payment, $order->info['total'], $insert_id);
 	}
 // end paczkomaty
 ```
 
-### Otwórz plik '/includes/database_tables.php'
+#### Open /includes/database_tables.php
 
-Dodaj wpis:
+`ADD:`
 ```php
 // start paczkomaty
-	define('TABLE_EXTERNAL_PACZKOMATY_INPOST', 'external_paczkomaty_inpost');
+    define('TABLE_EXTERNAL_PACZKOMATY_INPOST', 'external_paczkomaty_inpost');
 // end paczkomaty
 ```
 
+### Install the Paczkomaty InPost shipping module
 
-## Instalacja modułu
-Instalacja modułu odbywa sie w panelu administracyjnym
+Log into your admin section and go to `Modules` -> `Shipping`. Next, click `+ Install Module` button, select `Paczkomaty InPost` module from list and click `Install Module` button in the box on the right.
+The installation should be now complete.
 
-1.  Korzystając z menu głównego, rozwiń zakładkę Moduły (Modules), a nasępie wybierz opcję Dostawy (Shipping)
-2.  Zainstaluj Moduł (Install Module) i wybierz z listy Paczkomaty InPost)
-3.  Opcje konfiguracyjne dla modułu to:
-    *   Adres URL do API - domyślnie https://api.paczkomaty.pl
-    *   Paczkomat nadawczy (Nadawanie paczek bezpośrednio w Paczkomacie) - domyślnie wyłączony (wartość pusta), aby włączyć opcję należy podać odpowiedni kod Paczkomatu (znajdź paczkomat)
-    *   Email konta sklepu zarajestrowanego w usłudze Pakomaty InPost - domyślnie ustawiony email konta testowego
-    *   Hasło do konta sklepu zarajestrowanego w usłudze Pakomaty InPost - domyślnie ustawione hasło do konto testowego
-    *   Typ paczki generowanej w Managerze Paczek Paczkomaty InPost - domyślnie typ A (dostępne: A, B, C)
-    *   Cena wysyłki za pomoca usługi Pakoczmaty InPost - domyślnie 6.99
+#### Configuration options
+*   `URL Address for API` - default: https://api.paczkomaty.pl
+*   `Email for Paczkomaty InPost account` - default value is only for testing, you must set your data for Paczkomaty InPost account
+*   `Password for Paczkomaty Inpost account` - default value is only for testing, you must set your data for Paczkomaty InPost account
+*   `Sender machine` - default value is empty, to activate option you must enter the code for the sending machine, [find machine](http://www.paczkomaty.pl/znajdz_paczkomat,33.html), example: AND039
+*   `Pack type` - pack size, default: A, available sizes: A, B, C
+*   `Price for shipping` - default: 6.99
+
+
+//TODO
+
+## Installation of the management options for packs in admin panel
