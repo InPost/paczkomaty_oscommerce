@@ -216,9 +216,11 @@ define('BOX_CUSTOMERS_ORDERS', 'Orders');
 ```
 
 `DODAJ ten kod po:`
+```php
 // start paczkomaty
 define('BOX_CUSTOMERS_EXTERNAL_PACZKOMATY', 'Paczkomaty InPost');
 // end paczkomaty
+```
 
 ### Nowa opcja w panelu administracyjnym
 Po wszystkim, w panelu administracyjnym znajdziesz nową opcję. `Customers` -> `Paczkomaty InPost`
