@@ -1,42 +1,41 @@
-
-# Installation Instructions Module Paczkomaty InPost for osCommerce 2.3
-
-
-## Make a Backup
-You should make a backup of your entire site. This includes your code and the database.
+# Instrukcja Instalacji Modułu Paczkomaty InPost dla osCommerce 2.3
 
 
-## Installation of the shipping module
+## Zrób kopię zapasową
+Zrób kopię zapasową witryny sklepu, plików i bazy danych.
 
-### Upload Files
 
-#### New files
-The following files need to be uploaded to your site.
+## Instalacja modułu wysyłek
+
+### Prześlij pliki na serwer
+
+#### Nowe pliki
+Prześlij następujące pliki na serwer.
 
     /includes/functions/inpost_functions.php
     /includes/languages/polish/modules/shipping/paczkomaty.php
     /includes/modules/shipping/paczkomaty.php
 
-### Edit existing files
-Make the changes outlined below for each file. The numbers of lines are given in approximate.
+### Edytuj istniejące pliki
+Wprowadź zmiany opisane poniżej dla każdego pliku. Podane numery linii są szacunkowe dla nieedydowanej wcześniej kopi pliku.
 
-#### You need to manually edit these files
+#### Pliki, które należy przeedytować ręcznie
 
     /checkout_shipping.php
     /checkout_confirmation.php
     /checkout_process.php
     /includes/database_tables.php
 
-#### OPEN: /checkout_shipping.php
+#### OTWÓRZ: /checkout_shipping.php
 
-`FIND on line 122:`
+`ZNAJDŹ przy linii 122:`
 ```php
 $shipping = array('id' => $shipping,
     'title' => (($free_shipping == true) ?  $quote[0]['methods'][0]['title'] : $quote[0]['module'] . ' (' . $quote[0]['methods'][0]['title'] . ')'),
     'cost' => $quote[0]['methods'][0]['cost']);
 ```
 
-`ADD this code after:`
+`DODAJ ten kod po:`
 ```php
 // start paczkomaty
     if (preg_match('/paczkomaty_/', $shipping['id'])) {
@@ -46,14 +45,14 @@ $shipping = array('id' => $shipping,
 // end paczkomaty
 ```
 
-`FIND on line 274:`
+`ZNAJDŹ przy linii 274:`
 ```php
     } else {
           for ($j=0, $n2=sizeof($quotes[$i]['methods']); $j<$n2; $j++) {
     // set the radio button to be checked if it is the method chosen
             $checked = (($quotes[$i]['id'] . '_' . $quotes[$i]['methods'][$j]['id'] == $shipping['id']) ? true : false);
 ```
-`ADD this code before:`
+`DODAJ ten kod przed:`
 ```php
 // start paczkomaty
 	} elseif ($quotes[$i]['module'] == MODULE_SHIPPING_PACZKOMATY_TEXT_TITLE) {
@@ -80,15 +79,15 @@ $shipping = array('id' => $shipping,
 // end paczkomaty
 ```
 
-#### OPEN: /checkout_confirmation.php
+#### OTWÓRZ: /checkout_confirmation.php
 
-`FIND on line 65:`
+`ZNAJDŹ przy linii 65:`
 ```php
     require(DIR_WS_CLASSES . 'shipping.php');
   	$shipping_modules = new shipping($shipping);
 ```
 
-`ADD this code after:`
+`DODAJ ten kod po:`
 ```php
 // start paczkomaty
 	if (preg_match('/paczkomaty_/', $shipping['id'])) {
@@ -98,16 +97,16 @@ $shipping = array('id' => $shipping,
 // end paczkomaty
 ```
 
-#### OPEN: /checkout_process.php
+#### OTWÓRZ: /checkout_process.php
 
-`FIND on line 286:`
+`ZNAJDŹ przy linii 286:`
 ```php
         $payment_modules->after_process();
 
     	$cart->reset(true);
 ```
 
-`ADD this code after:`
+`DODAJ ten kod po:`
 ```php
  // start paczkomaty
 	if (preg_match('/paczkomaty_/', $shipping['id'])) {
@@ -117,54 +116,54 @@ $shipping = array('id' => $shipping,
 // end paczkomaty
 ```
 
-#### OPEN: /includes/database_tables.php
+#### OTWÓRZ: /includes/database_tables.php
 
-`ADD:`
+`DODAJ:`
 ```php
 // start paczkomaty
     define('TABLE_EXTERNAL_PACZKOMATY_INPOST', 'external_paczkomaty_inpost');
 // end paczkomaty
 ```
 
-### Install the Paczkomaty InPost shipping module
+### Instalacja modułu Paczkomaty InPost
 
-Log into your admin section and go to `Modules` -> `Shipping`. Next, click `+ Install Module` button, select `Paczkomaty InPost` module from list and click `Install Module` button in the box on the right.
-The installation should be now complete.
+Zaloguj sie do panelu administracyjnego, przejdź `Modules` -> `Shipping`. Następnie kliknij przycisk `+ Install Module`, wybierz z listy `Paczkomaty InPost` i kliknij przycisk `Install Module` znajdujący się menu po prawej stronie.
+Instalacja modułu powinna sie zakończyć.
 
-#### Configuration options
-*   `URL Address for API` - default: https://api.paczkomaty.pl
-*   `Email for Paczkomaty InPost account` - default value is only for testing, you must set your data for Paczkomaty InPost account
-*   `Password for Paczkomaty Inpost account` - default value is only for testing, you must set your data for Paczkomaty InPost account
-*   `Sender machine` - default value is empty, to activate option you must enter the code for the sending machine, [find machine](http://www.paczkomaty.pl/znajdz_paczkomat,33.html), example: AND039
-*   `Pack type` - pack size, default: A, available sizes: A, B, C
-*   `Price for shipping` - default: 6.99
+#### Dostępne opcje konfiguracyjne
+*   `Adres URL do API` - domyślnie: https://api.paczkomaty.pl
+*   `Email do konta w Paczkomaty InPost` - domyślna wartość to ustawienia testowe, wprowadź swoje dane z konta w Paczkomaty InPost
+*   `Hasło do konta w Paczkomaty Inpost` - domyślna wartość to ustawienia testowe, wprowadź swoje dane z konta w Paczkomaty InPost
+*   `Paczkomat nadawczy` - domyślna wartość jest pusta, abu aktywować możliwość nadawania bezpośrednio z paczkomatu, uzupełnij o właściwy dla niego kod, [znajdź paczkomat](http://www.paczkomaty.pl/znajdz_paczkomat,33.html), przykład: AND039
+*   `Typ paczki` - rozmiar paczki, domyślnie: A, dostępne rozmiary: A, B, C
+*   `Cena przesyłki` - domyślnie: 6.99
 
 
-## Installation of the management options for packs in admin panel
+## Instalacja opcji zarządzania paczkami dla panelu administracyjnego
 
-### Upload Files
+### Prześlij pliki na serwer
 
-#### New files
-The following files need to be uploaded to your site.
+#### Nowe pliki
+Prześlij następujące pliki na serwer.
 
     /admin/external_paczkomaty.php
     /admin/includes/classes/paczkomaty_ext.php
     /admin/includes/functions/inpost_functions.php
     /admin/includes/languages/polish/external_paczkomaty.php
 
-### Edit existing files
-Make the changes outlined below for each file. The numbers of lines are given in approximate.
+### Edytuj istniejące pliki
+Wprowadź zmiany opisane poniżej dla każdego pliku. Podane numery linii są szacunkowe dla nieedydowanej wcześniej kopi pliku.
 
-#### You need to manually edit these files
+#### Pliki, które należy przeedytować ręcznie
 
     /admin/boxes/customers.php
     /admin/includes/database_tables.php
     /admin/includes/filenames.php
     /admin/includes/languages/polish.php
 
-#### OPEN: /admin/boxes/customers.php
+#### OTWÓRZ: /admin/boxes/customers.php
 
-`FIND on line 21:`
+`ZNAJDŹ przy linii 21:`
 ```php
     array(
         'code' => FILENAME_ORDERS,
@@ -173,7 +172,7 @@ Make the changes outlined below for each file. The numbers of lines are given in
     )
 ```
 
-`REPLACE with this code:`
+`ZAMIEŃ na kod:`
 ```php
     array(
         'code' => FILENAME_ORDERS,
@@ -189,26 +188,26 @@ Make the changes outlined below for each file. The numbers of lines are given in
 // end paczkomaty
 ```
 
-#### OPEN: /admin/includes/database_tables.php
+#### OTWÓRZ: /admin/includes/database_tables.php
 
-`ADD:`
+`DODAJ:`
 ```php
 // start paczkomaty
     define('TABLE_EXTERNAL_PACZKOMATY_INPOST', 'external_paczkomaty_inpost');
 // end paczkomaty
 ```
 
-#### OPEN: /admin/includes/filenames.php
+#### OTWÓRZ: /admin/includes/filenames.php
 
-`ADD:`
+`DODAJ:`
 ```php
 // start paczkomaty
     define('FILENAME_EXTERNAL_PACZKOMATY', 'external_paczkomaty.php');
 // end paczkomaty
 ```
-#### OPEN: /admin/includes/languages/polish.php
+#### OTWÓRZ: /admin/includes/languages/polish.php
 
-`FIND on line 80:`
+`ZNAJDŹ przy linii 80:`
 ```php
 // customers box text in includes/boxes/customers.php
 define('BOX_HEADING_CUSTOMERS', 'Customers');
@@ -216,10 +215,10 @@ define('BOX_CUSTOMERS_CUSTOMERS', 'Customers');
 define('BOX_CUSTOMERS_ORDERS', 'Orders');
 ```
 
-`ADD this code after:`
+`DODAJ ten kod po:`
 // start paczkomaty
 define('BOX_CUSTOMERS_EXTERNAL_PACZKOMATY', 'Paczkomaty InPost');
 // end paczkomaty
 
-### New option in admin panel
-After all, in the admin panel you will find a new option. `Customers` -> `Paczkomaty InPost`
+### Nowa opcja w panelu administracyjnym
+Po wszystkim, w panelu administracyjnym znajdziesz nową opcję. `Customers` -> `Paczkomaty InPost`

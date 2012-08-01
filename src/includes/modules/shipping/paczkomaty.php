@@ -66,7 +66,7 @@ class paczkomaty {
 			'boxMachineName' => $shipping['paczkomat'],
 			'packType' => constant('MODULE_SHIPPING_PACZKOMATY_PACKTYPE'),
 			'onDeliveryAmount' => ($payment == 'cod')? $order_total : '',
-			'customerRef' => constant('STORE_NAME').' - '.MODULE_SHIPPING_PACZKOMATY_TEXT_ORDER_NUMBER.$order_id,
+			'customerRef' => MODULE_SHIPPING_PACZKOMATY_TEXT_ORDER_NUMBER.$order_id,
 			'senderAddress' => array(
 				'name' => constant('STORE_NAME'),
 				'surName' => constant('STORE_OWNER'),
@@ -79,7 +79,7 @@ class paczkomaty {
 				
 		$packs = $this->inpost_send_packs(constant('MODULE_SHIPPING_PACZKOMATY_EMAIL'), constant('MODULE_SHIPPING_PACZKOMATY_PASSWORD'), $packsData);
 		foreach ($packs as $pack)
-			tep_db_query("insert into " . TABLE_EXTERNAL_PACZKOMATY_INPOST . " (order_id, packcode, customerdeliveringcode, error_key, error_message, date_added) values ('".$order_id."', '".$pack['packcode']."', '".$pack['customerdeliveringcode']."', '".$pack['error_key']."', '".$pack['error_message']."', now())");
+			tep_db_query("insert into " . TABLE_EXTERNAL_PACZKOMATY_INPOST . " (order_id, packcode, customerdeliveringcode, label_printed, date_added) values ('".$order_id."', '".$pack['packcode']."', '".$pack['customerdeliveringcode']."', null, now())");
 	}
 
 	function find_paczkomaty_customer($email) {
@@ -217,7 +217,7 @@ class paczkomaty {
 			return $this->quotes;
 		}
 		
-		if ($total_weight >12) { // nie pokazuj dla przesylek > 12kg
+		if ($total_weight > 25) { // nie pokazuj dla przesylek > 25kg
 			$this->quotes['error'] = MODULE_SHIPPING_PACZKOMATY_UNDEFINED_RATE;
 			return $this->quotes;
 		}
@@ -280,7 +280,7 @@ class paczkomaty {
 
 	function install() {
 
-		tep_db_query("create table if not exists ".TABLE_EXTERNAL_PACZKOMATY_INPOST." (id int auto_increment, order_id int(11) not null, packcode varchar(64), customerdeliveringcode varchar(64), error_key varchar(32), error_message text, date_added datetime, primary key (id));");
+		tep_db_query("create table if not exists ".TABLE_EXTERNAL_PACZKOMATY_INPOST." (id int auto_increment, order_id int(11) not null, packcode varchar(64), customerdeliveringcode varchar(64), pack_status varchar(64), label_printed datetime null, date_added datetime, primary key (id));");
 		
 		tep_db_query("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, set_function, date_added) VALUES ('Wlacz wysylke do Paczkomaty InPost', 'MODULE_SHIPPING_PACZKOMATY_STATUS', 'True', 'Czy chcesz dodac opcje wysylki do Paczkomaty InPost?', '6', '0', 'tep_cfg_select_option(array(\'True\', \'False\'), ', now())");
 		tep_db_query("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added) values ('Adres URL do API', 'MODULE_SHIPPING_PACZKOMATY_API_URL', 'https://api.paczkomaty.pl', 'Adres URL do API Paczkomaty InPost', '6', '0', now())");	  
