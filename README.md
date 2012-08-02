@@ -14,6 +14,7 @@ You should make a backup of your entire site. This includes your code and the da
 The following files need to be uploaded to your site.
 
     /includes/functions/inpost_functions.php
+    /includes/languages/english/modules/shipping/paczkomaty.php
     /includes/languages/polish/modules/shipping/paczkomaty.php
     /includes/modules/shipping/paczkomaty.php
 
@@ -150,6 +151,7 @@ The following files need to be uploaded to your site.
     /admin/external_paczkomaty.php
     /admin/includes/classes/paczkomaty_ext.php
     /admin/includes/functions/inpost_functions.php
+    /admin/includes/languages/english/external_paczkomaty.php
     /admin/includes/languages/polish/external_paczkomaty.php
 
 ### Edit existing files
@@ -160,7 +162,8 @@ Make the changes outlined below for each file. The numbers of lines are given in
     /admin/boxes/customers.php
     /admin/includes/database_tables.php
     /admin/includes/filenames.php
-    /admin/includes/languages/polish.php
+    /admin/includes/languages/english.php
+    or /admin/includes/languages/polish.php
 
 #### OPEN: /admin/boxes/customers.php
 
@@ -206,7 +209,7 @@ Make the changes outlined below for each file. The numbers of lines are given in
     define('FILENAME_EXTERNAL_PACZKOMATY', 'external_paczkomaty.php');
 // end paczkomaty
 ```
-#### OPEN: /admin/includes/languages/polish.php
+#### OPEN: /admin/includes/languages/english.php or ../polish.php
 
 `FIND on line 80:`
 ```php
