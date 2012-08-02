@@ -157,7 +157,7 @@ $packs_split = new splitPageResults($HTTP_GET_VARS['page'], MAX_DISPLAY_SEARCH_R
 				$button_confirm = tep_draw_button(IMAGE_CONFIRM_PRINTOUT, 'document', tep_href_link(FILENAME_EXTERNAL_PACZKOMATY, tep_get_all_get_params(array('pID, action')) . 'pID=' . $pInfo->id . '&action=confirmpack'));
 				$button_refresh = tep_draw_button(IMAGE_REFRESH_PACKS_STATUS, 'document', tep_href_link(FILENAME_EXTERNAL_PACZKOMATY, tep_get_all_get_params(array('action')) . 'action=refresh'));
 				if (!$pInfo->pack_status || $pInfo->pack_status == 'Created')
-					$button_refresh = null;
+					$button_confirm = null;
 				
 				$contents[] = array('align' => 'center', 'text' => $button_generate . $button_delete . $button_confirm);
         		$contents[] = array('align' => 'center', 'text' => $button_refresh);

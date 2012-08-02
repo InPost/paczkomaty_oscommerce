@@ -9,7 +9,7 @@ Copyright (c) 2012 InPost Sp. z o.o.
 */
 class paczkomaty {
 
-	var $code, $title, $description, $enabled, $num_zones;
+	var $code, $title, $description, $enabled;
 
 	function paczkomaty() {
 		global $order, $total_weight;
@@ -21,7 +21,6 @@ class paczkomaty {
 		$this->icon = 'http://media.paczkomaty.pl/pieczatka.gif'; 
 		$this->tax_class = MODULE_SHIPPING_PACZKOMATY_TAX_CLASS;
 		$this->enabled = ((MODULE_SHIPPING_PACZKOMATY_STATUS == 'True') ? true : false);
-		$this->num_zones = 1;
 	}
 
 	function get_customer() {
@@ -78,6 +77,7 @@ class paczkomaty {
 			$packsData[0]['senderBoxMachineName'] = constant('MODULE_SHIPPING_PACZKOMATY_CUSTOMER_DELIVERING');
 				
 		$packs = $this->inpost_send_packs(constant('MODULE_SHIPPING_PACZKOMATY_EMAIL'), constant('MODULE_SHIPPING_PACZKOMATY_PASSWORD'), $packsData);
+		
 		foreach ($packs as $pack)
 			tep_db_query("insert into " . TABLE_EXTERNAL_PACZKOMATY_INPOST . " (order_id, packcode, customerdeliveringcode, label_printed, date_added) values ('".$order_id."', '".$pack['packcode']."', '".$pack['customerdeliveringcode']."', null, now())");
 	}
@@ -190,34 +190,26 @@ class paczkomaty {
 		$customer = $this->get_customer();
 		
 		$dest_country = $order->delivery['country']['iso_code_2'];
-		$dest_zone = 0;
 		$error = false;
 		
-		if ($order->delivery['country']['iso_code_2'] == 'PL')  {  // tylko na terenie Polski
-			for ($i=1; $i<=$this->num_zones; $i++) {
-				$countries_table = constant('MODULE_SHIPPING_PACZKOMATY_COUNTRIES_' . $i);
-				$country_zones = explode("[,]", $countries_table);
-				if (in_array($dest_country, $country_zones)) {
-					$dest_zone = $i;
-					break;
-				}
-			}
-			if ($dest_zone == 0) {
-				$this->quotes['error'] = MODULE_SHIPPING_ZONES_INVALID_ZONE;
-				return $this->quotes;
+		$countries_table = explode(',', constant('MODULE_SHIPPING_PACZKOMATY_COUNTRIES'));
+		if (in_array($dest_country, $countries_table)) {
+			$prices_table = explode(',', constant('MODULE_SHIPPING_PACZKOMATY_COST'));
+			$key = array_search($dest_country, $countries_table);
+			if (array_key_exists($key, $prices_table)) {
+				$shipping_cost = $prices_table[$key] * $shipping_num_boxes;
+			} else {
+				$shipping_cost = $prices_table[0] * $shipping_num_boxes;
 			}
 			$shipping_method = MODULE_SHIPPING_PACZKOMATY_TEXT_WAY . ' : ' . $shipping_weight . ' ' . MODULE_SHIPPING_PACZKOMATY_TEXT_UNITS . ' ' . MODULE_SHIPPING_PACZKOMATY_DELIVERY_TIMES;
-			$shipping_cost = constant('MODULE_SHIPPING_PACZKOMATY_COST_' . $dest_zone)* $shipping_num_boxes;
+		} else {
+			$this->quotes['error'] = MODULE_SHIPPING_PACZKOMATY_TEXT_INVALID_ZONE;
+			return $this->quotes;
 		}
 		
 		if (tep_not_null($this->icon)) $this->quotes['icon'] = tep_image($this->icon, $this->title);
 		
-		if ($dest_zone == 0) {   // poza rejonem
-			$this->quotes['error'] = MODULE_SHIPPING_ZONES_INVALID_ZONE;
-			return $this->quotes;
-		}
-		
-		if ($total_weight > 25) { // nie pokazuj dla przesylek > 25kg
+		if ($total_weight > 25) {
 			$this->quotes['error'] = MODULE_SHIPPING_PACZKOMATY_UNDEFINED_RATE;
 			return $this->quotes;
 		}
@@ -279,7 +271,8 @@ class paczkomaty {
 	}
 
 	function install() {
-
+		$default_countries = 'PL';
+		
 		tep_db_query("create table if not exists ".TABLE_EXTERNAL_PACZKOMATY_INPOST." (id int auto_increment, order_id int(11) not null, packcode varchar(64), customerdeliveringcode varchar(64), pack_status varchar(64), label_printed datetime null, date_added datetime, primary key (id));");
 		
 		tep_db_query("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, set_function, date_added) VALUES ('Wlacz wysylke do Paczkomaty InPost', 'MODULE_SHIPPING_PACZKOMATY_STATUS', 'True', 'Czy chcesz dodac opcje wysylki do Paczkomaty InPost?', '6', '0', 'tep_cfg_select_option(array(\'True\', \'False\'), ', now())");
@@ -288,15 +281,8 @@ class paczkomaty {
 		tep_db_query("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added) values ('Paczkomat nadawczy (Nadawanie paczek bezpośrednio w Paczkomacie)', 'MODULE_SHIPPING_PACZKOMATY_CUSTOMER_DELIVERING', '', 'Wprowadź kod Paczkomatu, aby włączyć opcję nadawania w Paczkomacie (np. AND039) - <a href=\"http://www.paczkomaty.pl/znajdz_paczkomat,33.html\" target=\"_blank\">znajdź paczkomat</a>', '6', '0', now())");
 		tep_db_query("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added) values ('Email konta Paczkomaty InPost', 'MODULE_SHIPPING_PACZKOMATY_EMAIL', 'test@testowy.pl', 'Adres email konta zarejestrowanego w Paczkomaty InPost', '6', '0', now())");
 		tep_db_query("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added) values ('Hasło do konta dla Paczkomaty InPost', 'MODULE_SHIPPING_PACZKOMATY_PASSWORD', 'WqJevQy*X7', 'Hasło do konta zarejestrowanego w Paczkomaty InPost', '6', '0', now())");
-		
-		for ($i = 1; $i <= $this->num_zones; $i++) {
-			$default_countries = '';
-			if ($i == 1) {
-				$default_countries = 'PL';
-			}
-			tep_db_query("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added) values ('Dostepne kraje', 'MODULE_SHIPPING_PACZKOMATY_COUNTRIES_" . $i ."', '" . $default_countries . "', 'Wprowadz oznaczenie kraju dla ktorego usluga jest dostepna (Default: PL)', '6', '0', now())");
-			tep_db_query("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added) values ('Cena przesylki', 'MODULE_SHIPPING_PACZKOMATY_COST_" . $i ."', '6.99', 'Domyslny koszt wysylki', '6', '0', now())");   
-		}
+		tep_db_query("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added) values ('Dostepne kraje', 'MODULE_SHIPPING_PACZKOMATY_COUNTRIES', '" . $default_countries . "', 'Wprowadz oznaczenie kraju dla ktorego usluga jest dostepna (Default: PL)', '6', '0', now())");
+		tep_db_query("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added) values ('Cena przesylki', 'MODULE_SHIPPING_PACZKOMATY_COST', '6.99', 'Domyslny koszt wysylki', '6', '0', now())");
 		tep_db_query("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added) values ('Typ paczki', 'MODULE_SHIPPING_PACZKOMATY_PACKTYPE', 'A', 'Rozmiar paczki (Dostępne typy: A, B, C)', '6', '0', now())"); 
 	}
 
@@ -314,13 +300,10 @@ class paczkomaty {
 			'MODULE_SHIPPING_PACZKOMATY_EMAIL',
 			'MODULE_SHIPPING_PACZKOMATY_PASSWORD',
 			'MODULE_SHIPPING_PACZKOMATY_PACKTYPE',
-			'MODULE_SHIPPING_PACZKOMATY_CUSTOMER_DELIVERING'
+			'MODULE_SHIPPING_PACZKOMATY_CUSTOMER_DELIVERING',
+			'MODULE_SHIPPING_PACZKOMATY_COUNTRIES',
+			'MODULE_SHIPPING_PACZKOMATY_COST'
 		);
-
-		for ($i=1; $i<=$this->num_zones; $i++) {
-			$keys[] = 'MODULE_SHIPPING_PACZKOMATY_COUNTRIES_' . $i;
-			$keys[] = 'MODULE_SHIPPING_PACZKOMATY_COST_' . $i;
-		}
 		return $keys;
 	}
 	

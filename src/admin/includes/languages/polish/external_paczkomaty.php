@@ -10,7 +10,7 @@ Copyright (c) 2012 InPost Sp. z o.o.
 
 define('HEADING_TITLE', 'Paczkomaty InPost');
 define('TABLE_HEADING_DATE_CREATED', 'Data utowrzenia');
-define('TABLE_HEADING_DATE_LABEL_CREATED', 'Data utowrzenia etykiety');
+define('TABLE_HEADING_DATE_LABEL_CREATED', 'Data utworzenia etykiety');
 define('TABLE_HEADING_ORDER_ID', 'ID zamówienia');
 define('TABLE_HEADING_PACKCODE', 'Kod paczki');
 define('TABLE_HEADING_STATUS', 'Status');
