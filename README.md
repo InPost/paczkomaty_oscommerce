@@ -20,6 +20,7 @@ The following files need to be uploaded to your site.
 
 ### Edit existing files
 Make the changes outlined below for each file. The numbers of lines are given in approximate.
+If yours files has not been modified, you can also copy already prepared files from package.
 
 #### You need to manually edit these files
 
@@ -156,10 +157,11 @@ The following files need to be uploaded to your site.
 
 ### Edit existing files
 Make the changes outlined below for each file. The numbers of lines are given in approximate.
+If yours files has not been modified, you can also copy already prepared files from package.
 
 #### You need to manually edit these files
 
-    /admin/boxes/customers.php
+    /admin/includes/boxes/customers.php
     /admin/includes/database_tables.php
     /admin/includes/filenames.php
     /admin/includes/languages/english.php

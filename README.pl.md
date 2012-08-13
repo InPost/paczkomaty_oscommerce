@@ -18,6 +18,7 @@ Prześlij następujące pliki na serwer.
 
 ### Edytuj istniejące pliki
 Wprowadź zmiany opisane poniżej dla każdego pliku. Podane numery linii są szacunkowe dla nieedydowanej wcześniej kopi pliku.
+Jeżeli Twoje pliki nie były wcześniej modyfikowane, możesz skopiować i zamienić je przygotowanymi plikami z paczki.
 
 #### Pliki, które należy przeedytować ręcznie
 
@@ -153,10 +154,11 @@ Prześlij następujące pliki na serwer.
 
 ### Edytuj istniejące pliki
 Wprowadź zmiany opisane poniżej dla każdego pliku. Podane numery linii są szacunkowe dla nieedydowanej wcześniej kopi pliku.
+Jeżeli Twoje pliki nie były wcześniej modyfikowane, możesz skopiować i zamienić je przygotowanymi plikami z paczki.
 
 #### Pliki, które należy przeedytować ręcznie
 
-    /admin/boxes/customers.php
+    /admin/includes/boxes/customers.php
     /admin/includes/database_tables.php
     /admin/includes/filenames.php
     /admin/includes/languages/polish.php
