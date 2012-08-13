@@ -1,0 +1,61 @@
+From 4c293b4770170372d933eba72b590d36dac19009 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Rafa=C5=82=20Dymitruk?= <rafal@ik2.pl>
+Date: Mon, 13 Aug 2012 13:32:17 +0200
+Subject: [PATCH] checkout_shipping
+
+---
+ checkout_shipping.php |   31 +++++++++++++++++++++++++++++++
+ 1 files changed, 31 insertions(+), 0 deletions(-)
+
+diff --git a/checkout_shipping.php b/checkout_shipping.php
+index d8ed6ad..789681a 100755
+--- a/checkout_shipping.php
++++ b/checkout_shipping.php
+@@ -124,6 +124,13 @@
+                                 'title' => (($free_shipping == true) ?  $quote[0]['methods'][0]['title'] : $quote[0]['module'] . ' (' . $quote[0]['methods'][0]['title'] . ')'),
+                                 'cost' => $quote[0]['methods'][0]['cost']);
+ 
++              // start paczkomaty
++              if (preg_match('/paczkomaty_/', $shipping['id'])) {
++              	$pa = new Paczkomaty();
++              	$shipping = $pa->oscomm_prepare_shipping($quote, $shipping, $free_shipping);
++              } 
++              // end paczkomaty
++
+               tep_redirect(tep_href_link(FILENAME_CHECKOUT_PAYMENT, '', 'SSL'));
+             }
+           }
+@@ -270,6 +277,30 @@ function rowOutEffect(object) {
+     	<td colspan="3"><?php echo $quotes[$i]['error']; ?></td>
+     </tr>      
+ <?php 
++// start paczkomaty
++	} elseif ($quotes[$i]['module'] == MODULE_SHIPPING_PACZKOMATY_TEXT_TITLE) {
++		$pa = new paczkomaty();
++       	$checked = preg_match('/paczkomaty/', $shipping['id']);
++		if ( ($checked) || ($n == 1 && $n2 == 1) ) {
++			echo '<tr id="defaultSelected" class="moduleRowSelected" onmouseover="rowOverEffect(this)" onmouseout="rowOutEffect(this)" onclick="selectRowEffect(this, '.$radio_buttons.')">';
++   		} else {
++   			echo '<tr id="paczkomatyRow" class="moduleRow" onmouseover="rowOverEffect(this)" onmouseout="rowOutEffect(this)" onclick="selectRowEffect(this, '.$radio_buttons.')">';
++   		}
++   		echo '<td width="75%" style="padding-left: 15px;">';
++   		echo $pa->oscomm_paczkomaty_dropbox($quotes[$i], $shipping).'</td>';
++   		echo '<td>'.$currencies->format(tep_add_tax($quotes[$i]['methods'][0]['cost'], (isset($quotes[$i]['tax']) ? $quotes[$i]['tax'] : 0))).'</td>';
++		echo '<td align="right">'.tep_draw_radio_field('shipping', $quotes[$i]['id'] . '_' . $quotes[$i]['methods'][0]['id'], $checked, 'id="shipping_paczkomaty"').
++				'<script type="text/javascript">
++					function changeCheckedValue(obj) {
++						document.getElementById("shipping_paczkomaty").value = obj.options[obj.selectedIndex].value;
++						selectRowEffect(document.getElementById("paczkomatyRow"), '.$radio_buttons.');
++					}
++					changeCheckedValue(document.getElementById("dropbox_paczkomaty"));
++				</script>
++	        	</td>';
++		echo '</tr>';
++// end paczkomaty
++
+         } else {
+           for ($j=0, $n2=sizeof($quotes[$i]['methods']); $j<$n2; $j++) {
+           	
+-- 
+1.7.8.3
+
